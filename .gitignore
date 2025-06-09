@@ -1,0 +1,77 @@
+# Created by https://www.toptal.com/developers/gitignore/api/node,macos,linux,windows
+# Edit at https://www.toptal.com/developers/gitignore?templates=node,macos,linux,windows
+
+### Linux ###
+*~
+
+# temporary files
+*#
+.#*
+*.swp
+*.swo
+
+# backup files
+*.bak
+*.tmp
+*.orig
+*~
+*.log
+
+# directories
+.cache
+.config
+.local
+
+# Package files
+*.deb
+*.rpm
+*.tgz
+*.tar.gz
+*.zip
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# OS generated files
+.DS_Store
+.localized
+.Trashes
+._*
+
+# Thumbnails
+.thumbnails
+
+# Files that might contain sensitive information
+.env
+.htpasswd
+
+# Compiled files
+*.pyc
+__pycache__
+
+# Editor specific files
+.vscode
+.idea
+
+# Build artifacts
+build/
+dist/
+
+# Dependency directories
+node_modules/
+
+# Test coverage
+coverage/
+
+# macOS specific files
+.DS_Store
+.localized
+.Trashes
+._*
+
+# Windows specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
