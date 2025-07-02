@@ -1,0 +1,338 @@
+{
+    "description": "A New Flow",
+    "states": [
+        {
+            "name": "Trigger",
+            "type": "trigger",
+            "transitions": [
+                {
+                    "event": "incomingMessage"
+                },
+                {
+                    "next": "set_variables_1",
+                    "event": "incomingCall"
+                },
+                {
+                    "event": "incomingConversationMessage"
+                },
+                {
+                    "event": "incomingRequest"
+                },
+                {
+                    "event": "incomingParent"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": 120,
+                    "y": -330
+                }
+            }
+        },
+        {
+            "name": "ContestadoraGravacao",
+            "type": "say-play",
+            "transitions": [
+                {
+                    "next": "Copy_of_AM_Beep",
+                    "event": "audioComplete"
+                }
+            ],
+            "properties": {
+                "play": "https://your-domain.twil.io/voicemail-example.m4a",
+                "voice": "Google.pt-BR-Standard-A",
+                "offset": {
+                    "x": -280,
+                    "y": 540
+                },
+                "loop": 1,
+                "language": "pt-BR"
+            }
+        },
+        {
+            "name": "SimulHuman",
+            "type": "say-play",
+            "transitions": [
+                {
+                    "next": "gather_1",
+                    "event": "audioComplete"
+                }
+            ],
+            "properties": {
+                "voice": "Polly.Thiago-Neural",
+                "offset": {
+                    "x": 90,
+                    "y": 540
+                },
+                "loop": 1,
+                "language": "pt-BR",
+                "digits": "1"
+            }
+        },
+        {
+            "name": "ForwardToMe",
+            "type": "connect-call-to",
+            "transitions": [
+                {
+                    "event": "callCompleted"
+                },
+                {
+                    "event": "hangup"
+                }
+            ],
+            "properties": {
+                "offset": {
+                    "x": 460,
+                    "y": 530
+                },
+                "caller_id": "{{contact.channel.address}}",
+                "noun": "number",
+                "to": "+1234567890",
+                "timeout": 30
+            }
+        },
+        {
+            "name": "split_1",
+            "type": "split-based-on",
+            "transitions": [
+                {
+                    "next": "ContestadoraSimples",
+                    "event": "noMatch"
+                },
+                {
+                    "next": "ContestadoraGravacao",
+                    "event": "match",
+                    "conditions": [
+                        {
+                            "friendly_name": "If value equal_to 1",
+                            "arguments": [
+                                "{{flow.variables.random}}"
+                            ],
+                            "type": "equal_to",
+                            "value": "1"
+                        }
+                    ]
+                },
+                {
+                    "next": "SimulHuman",
+                    "event": "match",
+                    "conditions": [
+                        {
+                            "friendly_name": "If value equal_to 2",
+                            "arguments": [
+                                "{{flow.variables.random}}"
+                            ],
+                            "type": "equal_to",
+                            "value": "2"
+                        }
+                    ]
+                },
+                {
+                    "next": "ForwardToMe",
+                    "event": "match",
+                    "conditions": [
+                        {
+                            "friendly_name": "If value equal_to 3",
+                            "arguments": [
+                                "{{flow.variables.random}}"
+                            ],
+                            "type": "equal_to",
+                            "value": "3"
+                        }
+                    ]
+                }
+            ],
+            "properties": {
+                "input": "{{flow.variables.random}}",
+                "offset": {
+                    "x": -180,
+                    "y": 210
+                }
+            }
+        },
+        {
+            "name": "set_variables_1",
+            "type": "set-variables",
+            "transitions": [
+                {
+                    "next": "split_1",
+                    "event": "next"
+                }
+            ],
+            "properties": {
+                "variables": [
+                    {
+                        "type": "string",
+                        "value": "{% assign min = 1 %}\n{% assign max = 3 %}\n{% assign diff = max | minus: min %}\n{% assign randomNumber = \"now\" | date: \"%N\" | modulo: diff | plus: min %}",
+                        "key": "random"
+                    }
+                ],
+                "offset": {
+                    "x": -70,
+                    "y": -10
+                }
+            }
+        },
+        {
+            "name": "ContestadoraSimples",
+            "type": "say-play",
+            "transitions": [
+                {
+                    "next": "record_voicemail_1",
+                    "event": "audioComplete"
+                }
+            ],
+            "properties": {
+                "voice": "Polly.Vitoria-Neural",
+                "offset": {
+                    "x": -650,
+                    "y": 550
+                },
+                "loop": 1,
+                "say": "Caixa de Recados! Deixe o seu recado após o sinal.",
+                "language": "pt-BR"
+            }
+        },
+        {
+            "name": "Copy_of_AM_Beep",
+            "type": "say-play",
+            "transitions": [
+                {
+                    "next": "record_voicemail_2",
+                    "event": "audioComplete"
+                }
+            ],
+            "properties": {
+                "play": "https://your-domain.twil.io/beep-sound.wav",
+                "offset": {
+                    "x": -410,
+                    "y": 830
+                },
+                "loop": 1
+            }
+        },
+        {
+            "name": "record_voicemail_1",
+            "type": "record-voicemail",
+            "transitions": [
+                {
+                    "event": "recordingComplete"
+                },
+                {
+                    "event": "noAudio"
+                },
+                {
+                    "event": "hangup"
+                }
+            ],
+            "properties": {
+                "transcribe": false,
+                "offset": {
+                    "x": -830,
+                    "y": 830
+                },
+                "trim": "trim-silence",
+                "play_beep": "true",
+                "finish_on_key": "#",
+                "recording_status_callback_url": "https://your-webhook-domain.com/webhook",
+                "timeout": 5,
+                "max_length": 3600
+            }
+        },
+        {
+            "name": "record_voicemail_2",
+            "type": "record-voicemail",
+            "transitions": [
+                {
+                    "event": "recordingComplete"
+                },
+                {
+                    "event": "noAudio"
+                },
+                {
+                    "event": "hangup"
+                }
+            ],
+            "properties": {
+                "transcribe": false,
+                "offset": {
+                    "x": -280,
+                    "y": 1080
+                },
+                "trim": "trim-silence",
+                "play_beep": "false",
+                "finish_on_key": "#",
+                "recording_status_callback_url": "https://your-webhook-domain.com/webhook",
+                "timeout": 5,
+                "max_length": 3600
+            }
+        },
+        {
+            "name": "gather_1",
+            "type": "gather-input-on-call",
+            "transitions": [
+                {
+                    "next": "Copy_of_gather_1",
+                    "event": "keypress"
+                },
+                {
+                    "event": "speech"
+                },
+                {
+                    "event": "timeout"
+                }
+            ],
+            "properties": {
+                "voice": "Google.pt-BR-Neural2-B",
+                "speech_timeout": "5",
+                "offset": {
+                    "x": 20,
+                    "y": 780
+                },
+                "loop": 1,
+                "finish_on_key": "#",
+                "say": "Alô?",
+                "language": "pt-BR",
+                "stop_gather": true,
+                "gather_language": "en",
+                "speech_model": "default",
+                "timeout": 5
+            }
+        },
+        {
+            "name": "Copy_of_gather_1",
+            "type": "gather-input-on-call",
+            "transitions": [
+                {
+                    "event": "keypress"
+                },
+                {
+                    "event": "speech"
+                },
+                {
+                    "event": "timeout"
+                }
+            ],
+            "properties": {
+                "voice": "Google.pt-BR-Neural2-B",
+                "speech_timeout": "5",
+                "offset": {
+                    "x": 140,
+                    "y": 1080
+                },
+                "loop": 1,
+                "finish_on_key": "#",
+                "say": "Oi? Tem alguém aí?",
+                "language": "pt-BR",
+                "stop_gather": true,
+                "gather_language": "en",
+                "speech_model": "default",
+                "timeout": 10
+            }
+        }
+    ],
+    "initial_state": "Trigger",
+    "flags": {
+        "allow_concurrent_calls": true
+    }
+}
