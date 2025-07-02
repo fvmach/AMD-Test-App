@@ -1,81 +1,207 @@
 # Twilio Voice API – Answering Machine Detection (AMD) Demo
 
-This project demonstrates how to use Twilio's Voice API to make outbound calls with Answering Machine Detection (AMD) and fine-tune its parameters for different detection scenarios.
+A comprehensive demonstration project showcasing Twilio's Answering Machine Detection (AMD) capabilities with multiple testing scenarios, configurations, and Studio flow simulations.
 
-## Requirements
+## Project Overview
 
-- A Twilio account with Voice capabilities
-- Two Twilio phone numbers (one for outbound calls, one for simulating call responses - You can also use your own phone number for testing)
-- Python 3.7+ with the following libraries installed:
+This project provides three different approaches to test and fine-tune Twilio's AMD functionality:
 
-```bash
-pip install twilio flask python-dotenv
+1. **Advanced Version** - Automated batch testing with multiple AMD configurations
+2. **Manual Setup** - Interactive testing with step-by-step control
+3. **Answering Machine Simulator** - Studio flow examples for simulating different scenarios
+
+## Repository Structure
+
+```
+twilio-amd-demo/
+├── README.md                           # This file
+├── requirements.txt                    # Python dependencies
+├── Advanced Version/                   # Automated AMD testing suite
+│   ├── README.md                      # Advanced setup guide
+│   ├── amd_test_notebook.ipynb        # Jupyter notebook with batch testing
+│   └── server.py                      # Flask webhook server
+├── Manual Setup/                       # Interactive AMD testing
+│   ├── README.md                      # Manual setup guide
+│   ├── amd_demo_notebook.ipynb        # Step-by-step testing notebook
+│   └── server.py                      # Basic webhook server
+└── Answering Machine Simulator/        # Studio flow examples
+    ├── README.md                      # Studio setup guide
+    └── studio-flow-example.json       # Example flows for testing
 ```
 
-- A `.env` file configured with:
+## Quick Start
+
+### Prerequisites
+
+- **Twilio Account** with Voice API capabilities
+- **Two Twilio Phone Numbers** (caller and callee. Callee can be replaced by another PSTN phone number)
+- **Python 3.7+** with pip
+- **ngrok** (for webhook exposure)
+
+### Basic Setup
+
+1. **Clone and install dependencies:**
+   ```bash
+   git clone <repository-url>
+   cd twilio-amd-demo
+   pip install -r requirements.txt
+   ```
+
+2. **Configure environment variables:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Twilio credentials
+   ```
+
+3. **Set up ngrok:**
+   ```bash
+   ngrok http 5000 --domain=your-domain.ngrok.io
+   ```
+
+4. **Choose your testing approach:**
+   - **Quick Start**: Use [Advanced Version](Advanced%20Version/README.md) for automated batch testing
+   - **Learn Step-by-Step**: Use [Manual Setup](Manual%20Setup/README.md) for interactive testing
+   - **Simulate Scenarios**: Use [Answering Machine Simulator](Answering%20Machine%20Simulator/README.md) with Studio flows
+
+## Environment Configuration
+
+Create a `.env` file with your Twilio credentials:
 
 ```env
-TWILIO_ACCOUNT_SID=ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=your_auth_token_here
 TWILIO_PHONE_NUMBER=+15551234567
 INCOMING_PHONE_NUMBER=+15557654321
+NGROK_DOMAIN=your-domain.ngrok.io
 ```
 
-## Project Flow
+## AMD Testing Scenarios
 
-1. A Flask server is launched to receive Twilio webhook events.
-2. A series of AMD use cases are defined with specific configurations.
-3. Calls are executed automatically or interactively using those parameters.
-4. Call results are monitored and analyzed using Twilio Call SIDs.
+This project includes pre-configured AMD scenarios:
 
-## Optional AMD Parameters
+| Configuration | Use Case | Timeout | Speech Threshold | Best For |
+|---------------|----------|---------|------------------|----------|
+| **Residential Fast** | Personal phones | 15s | 1800ms | Mobile/home phones |
+| **Business Standard** | Business lines | 20s | 2400ms | Corporate systems |
+| **Voicemail Drop** | Message delivery | 45s | 3000ms | Voicemail detection |
+| **Conservative** | High accuracy | 25s | 2400ms | Fewer false positives |
+| **Aggressive** | Fast response | 8s | 1500ms | Quick decisions |
+| **Custom Tuning** | Fine-tuning | Configurable | Configurable | Parameter optimization |
 
-Twilio provides four optional parameters to adjust the performance of the AMD engine. Below are the allowed values and descriptions for each:
+## Documentation
 
-| Parameter Name                     | Allowed Values     | Default Value |
-|----------------------------------|---------------------|----------------|
-| MachineDetectionTimeout           | Between 3 and 59    | 30             |
-| MachineDetectionSpeechThreshold   | Between 1000 and 6000 | 2400         |
-| MachineDetectionSpeechEndThreshold| Between 500 and 5000  | 1200         |
-| MachineDetectionSilenceTimeout    | Between 2000 and 10000 | 5000        |
+### Detailed Guides
 
-### MachineDetectionTimeout
-The number of seconds Twilio should spend attempting to detect an answering machine before timing out. If this time is exceeded, the `AnsweredBy` field will be set to `unknown`.
+- **[Advanced Version Guide](Advanced%20Version/README.md)** - Automated batch testing with 6 pre-configured scenarios
+- **[Manual Setup Guide](Manual%20Setup/README.md)** - Interactive testing with detailed explanations
+- **[Studio Simulator Guide](Answering%20Machine%20Simulator/README.md)** - Creating realistic test scenarios
 
-- Increasing this gives the engine more time to detect long greetings.
-- Decreasing it favors quicker responses but may increase `unknown` results.
+### AMD Parameter Reference
 
-### MachineDetectionSpeechThreshold
-Defines the minimum duration (in milliseconds) of speech activity to be considered a machine.
+| Parameter | Range | Default | Purpose |
+|-----------|--------|---------|---------|
+| `MachineDetectionTimeout` | 3-59s | 30s | Max detection time |
+| `MachineDetectionSpeechThreshold` | 1000-6000ms | 2400ms | Min speech duration |
+| `MachineDetectionSpeechEndThreshold` | 500-5000ms | 1200ms | Silence after speech |
+| `MachineDetectionSilenceTimeout` | 2000-10000ms | 5000ms | Initial silence limit |
 
-- Increase to reduce false machine detection on long human greetings.
-- Decrease to improve detection of short voicemail greetings.
+## Usage Examples
 
-### MachineDetectionSpeechEndThreshold
-The number of milliseconds of silence following speech that indicates the speech segment is over.
+### Quick Batch Test (Advanced Version)
+```python
+# Run all 6 AMD configurations automatically
+batch_test_all_configurations()
+```
 
-- Increase to treat longer silences within greetings as part of the same message.
-- Decrease for faster detection of human responses.
+### Single Configuration Test
+```python
+# Test a specific AMD scenario
+make_amd_call('residential_fast')
+```
 
-### MachineDetectionSilenceTimeout
-The number of milliseconds of initial silence after which Twilio will return `AnsweredBy=unknown`.
+### Custom Configuration
+```python
+# Create and test custom parameters
+config = create_custom_config(
+    name="My Custom AMD",
+    timeout=15,
+    speech_threshold=2000
+)
+```
 
-- Increase to allow more time for initial audio.
-- Decrease to fail fast when silence is detected.
+### Monitor Results
+```python
+# Track call progress and AMD results
+monitor_call_with_amd_results('CAxxxxxxxxxx')
+```
 
-## Running the Project
+## Understanding AMD Results
 
-1. Launch the Flask webhook server.
-2. Execute test calls using the defined AMD scenarios.
-3. Monitor call status using `monitor_call_status(call_sid)`.
-4. Use `analyze_recent_calls()` to gather statistics from recent calls.
+| Result | Meaning | Action |
+|--------|---------|--------|
+| `human` | Person answered | Continue conversation |
+| `machine_start` | Voicemail beginning | Wait for beep |
+| `machine_end_beep` | Beep detected | Leave message |
+| `machine_end_silence` | Voicemail ended | Leave message |
+| `fax` | Fax machine | Hang up |
+| `unknown` | Unclear result | Use fallback logic |
 
-## Notes
+## Architecture
 
-- AMD detection may vary depending on how users or voicemail systems respond.
-- Always test with real-world examples to find optimal parameter settings.
+```
+┌─────────────────┐    ┌──────────────┐    ┌─────────────────┐
+│   Your Script   │───▶│ Twilio Voice │───▶│  Target Phone   │
+│  (AMD Enabled)  │    │     API      │    │   (Test Dest)   │
+└─────────────────┘    └──────────────┘    └─────────────────┘
+         │                       │
+         ▼                       ▼
+┌─────────────────┐    ┌──────────────┐
+│ Flask Webhook   │◀───│ AMD Results  │
+│    Server       │    │   Callback   │
+└─────────────────┘    └──────────────┘
+```
 
-## References
+## Troubleshooting
+
+### Common Issues
+
+1. **No AMD callbacks received**
+   - Check ngrok is running and accessible
+   - Verify webhook URL in configuration
+   - Ensure phone numbers are correct
+
+2. **Always getting 'unknown' results**
+   - Increase `machine_detection_timeout`
+   - Adjust speech thresholds
+   - Check target phone behavior
+
+3. **Webhook server not accessible**
+   - Confirm ngrok domain matches `.env`
+   - Test webhook URL manually
+   - Check firewall settings
+
+### Debug Tips
+
+- Use the webhook server logs to see real-time AMD data
+- Test with known scenarios (your own voicemail)
+- Monitor call objects for AMD attributes
+- Compare different configurations side-by-side
+
+## Additional Resources
 
 - [Twilio AMD Documentation](https://www.twilio.com/docs/voice/answering-machine-detection)
-- [Twilio Voice API](https://www.twilio.com/docs/voice/api)
+- [Twilio Voice API Reference](https://www.twilio.com/docs/voice/api)
+- [TwiML Voice Reference](https://www.twilio.com/docs/voice/twiml)
+- [Twilio Studio Documentation](https://www.twilio.com/docs/studio)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests.
+
+## License
+
+This project is provided as-is for educational and testing purposes. Please ensure compliance with Twilio's terms of service and applicable regulations when using AMD for production calls.
+
+---
+
+**Need Help?** Check the specific README files in each subdirectory for detailed setup instructions and examples.
